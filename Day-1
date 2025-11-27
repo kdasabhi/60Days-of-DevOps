@@ -1,0 +1,426 @@
+# Complete DevOps Guide
+
+## Table of Contents
+- [What is DevOps?](#what-is-devops)
+- [Containerization](#containerization)
+- [Container Orchestration](#container-orchestration)
+- [Security in DevOps](#security-in-devops)
+- [DevOps Team Structure](#devops-team-structure)
+- [Environments in DevOps](#environments-in-devops)
+- [Deployment Strategies](#deployment-strategies)
+
+---
+
+## What is DevOps?
+
+DevOps is a cultural and technical practice that combines software **Dev**elopment and IT **Op**erations to shorten the development lifecycle and deliver high-quality software continuously. It emphasizes collaboration, automation, and integration between developers and operations teams.
+
+### Key Principles
+- **Automation** - Automate repetitive tasks to reduce human error
+- **Collaboration** - Break down silos between teams
+- **Continuous Integration/Continuous Deployment (CI/CD)** - Automate testing and deployment
+- **Monitoring & Feedback** - Continuously monitor and improve systems
+
+---
+
+## 7️⃣ Containerization
+
+### Problem
+Traditional applications have dependency conflicts and environment inconsistencies ("It works on my machine" syndrome).
+
+### Solution: Containers
+Package everything (code, runtime, libraries, dependencies) inside a container image that works everywhere consistently.
+
+### Technology
+**Docker** is the most popular containerization platform.
+
+### Benefits Table
+
+| Benefit | Description |
+|---------|-------------|
+| **Portability** | Run anywhere - dev laptop, test server, or cloud |
+| **Consistency** | Same environment across all stages |
+| **Isolation** | Applications run independently without conflicts |
+| **Efficiency** | Lightweight compared to virtual machines |
+| **Scalability** | Easy to replicate and scale horizontally |
+
+### Example Use Case
+```
+Developer builds app in Docker → 
+QA tests same Docker image → 
+Production runs same Docker image
+```
+**Result**: Zero environment-related bugs
+
+---
+
+## 8️⃣ Container Orchestration
+
+### Problem
+Manual monitoring and management of containers is impossible at scale:
+- Cannot monitor apps 24/7 manually
+- Manual restart during failures causes downtime
+- Scaling requires manual intervention
+- No automated health checks
+
+### Solution: Kubernetes (K8s)
+Kubernetes is a container orchestration platform that automates deployment, scaling, and management of containerized applications.
+
+### Kubernetes Capabilities
+
+| Feature | Description |
+|---------|-------------|
+| **Auto-restart** | Automatically restarts failed containers |
+| **Self-healing** | Replaces and reschedules containers on node failures |
+| **Auto-scaling** | Scales applications based on CPU/memory usage |
+| **Load balancing** | Distributes traffic across containers |
+| **Rolling updates** | Updates applications without downtime |
+| **Notifications** | Alerts teams about system health |
+
+### How It Works
+1. Define desired state in YAML configuration
+2. Kubernetes continuously monitors actual state
+3. If actual ≠ desired, K8s takes corrective action
+4. Ensures applications are always running optimally
+
+---
+
+## 9️⃣ Security in DevOps (Shift-Left Security)
+
+**Shift-Left Security** means integrating security checks early and throughout the entire development pipeline, not just at the end.
+
+### Security Layers
+
+#### Layer 1: First-Level Checks (During Development)
+
+| Check Type | Purpose | Tool |
+|------------|---------|------|
+| **Syntax Errors** | Catch compilation errors early | Built-in compilers |
+| **File System Scan** | Detect hardcoded secrets/tokens | GitGuardian, TruffleHog |
+| **Dependency Scan** | Find DOV (Deprecated, Outdated, Vulnerable) packages | **Trivy**, Snyk |
+| **Code Quality Scan** | Detect bugs, code smells, security hotspots | **SonarQube** |
+| **Docker Image Scan** | Scan container images for vulnerabilities | **Trivy**, Clair |
+
+#### Layer 2: Deployment Security
+
+**Best Practices:**
+
+1. **Avoid Root User**
+   - Never run containers as root
+   - Use non-privileged users to minimize attack surface
+   - Example: `USER 1001` in Dockerfile
+
+2. **Principle of Least Privilege**
+   - Use service accounts with minimum required permissions
+   - Apply RBAC (Role-Based Access Control) in Kubernetes
+   - Grant only necessary access rights
+
+#### Layer 3: Penetration Testing
+
+**Purpose**: Proactively find vulnerabilities by simulating real attacks on your own application.
+
+| Tool | Description |
+|------|-------------|
+| **OWASP ZAP** | Open-source security scanner for finding vulnerabilities |
+| **Burp Suite** | Web application security testing |
+| **Metasploit** | Penetration testing framework |
+
+### Security Pipeline Flow
+```
+Code Commit → Syntax Check → Secret Scan → Dependency Scan → 
+Code Quality → Build → Image Scan → Deploy (Secure Config) → 
+Penetration Test → Production
+```
+
+---
+
+## 🏢 Teams in DevOps
+
+Modern DevOps requires collaboration between multiple specialized teams:
+
+| Team | Responsibilities | Key Activities |
+|------|-----------------|----------------|
+| **Development Team** | Write and test code | - Develop features<br>- Unit testing locally<br>- Code reviews<br>- Bug fixes |
+| **Infrastructure Team** | Manage infrastructure and access | - Server management<br>- Kubernetes cluster setup<br>- Access control (IAM)<br>- Network configuration |
+| **DevOps Team** | Build and maintain CI/CD | - Pipeline creation<br>- Automation scripts<br>- Deployment automation<br>- Monitoring setup |
+| **QA Team** | Ensure quality through testing | - Write automation test scripts<br>- Integration testing<br>- Performance testing<br>- Regression testing |
+
+### Collaboration Flow
+```
+Dev writes code → DevOps builds pipeline → Infra provides resources → 
+QA tests → All teams monitor production
+```
+
+---
+
+## 🌍 Environments in DevOps
+
+Environments are isolated setups where applications are deployed and tested before reaching customers.
+
+### Environment Hierarchy
+
+| Environment | Purpose | Stability Level | Access |
+|-------------|---------|----------------|--------|
+| **Dev** | Active development and initial testing | Lowest | Developers |
+| **QA/Staging** | Quality assurance and integration testing | Medium | QA Team, Developers |
+| **Pre-Prod** | Final validation (identical to Production) | High | Limited team members |
+| **Production** | Live environment serving customers | Highest | Automated deployments only |
+| **DR (Disaster Recovery)** | Backup environment for critical failures | High | Emergency use only |
+
+### Environment Flow
+```
+Dev → QA/Staging → Pre-Prod → Production
+                              ↓
+                          DR (if needed)
+```
+
+### Critical Rules
+
+⚠️ **NEVER deploy directly to Production**
+
+✅ **Always test in lower environments first**
+
+**Why Pre-Prod exists:**
+- Identical to Production (same config, data volume, infrastructure)
+- Final validation before customer impact
+- Catches environment-specific issues
+- Allows safe rollback testing
+
+---
+
+## 🚀 Deployment Strategies
+
+Choosing the right deployment strategy balances between **speed**, **risk**, and **downtime**.
+
+### Strategy Comparison Table
+
+| Strategy | Downtime | Risk Level | Use Case | Rollback Speed |
+|----------|----------|------------|----------|----------------|
+| **Recreate** | Yes | High | Non-critical apps, maintenance windows | Fast |
+| **Rolling Update** | No | Low | Most production applications | Moderate |
+| **Canary** | No | Very Low | High-risk changes, new features | Fast |
+| **Blue-Green** | No | Low | Critical apps requiring instant rollback | Instant |
+| **Shadow** | No | Very Low | Testing with real production load | N/A (no actual switch) |
+
+---
+
+### 1. Recreate Deployment
+
+**Process:**
+```
+V1 Running → Stop V1 → Deploy V2 → Start V2
+```
+
+**Characteristics:**
+- ⏱️ Has downtime during transition
+- 💰 Cost-effective (no extra resources needed)
+- ⚡ Simple and fast to implement
+
+**When to Use:**
+- Development/staging environments
+- Maintenance windows are acceptable
+- Non-critical applications
+- Cost is a major constraint
+
+**Example:**
+```
+Application V1 (running) → [Downtime 5 mins] → Application V2 (running)
+```
+
+---
+
+### 2. Rolling Update
+
+**Process:**
+```
+Server 1: V1 → V2
+Server 2: V1 → V2  (after Server 1 is healthy)
+Server 3: V1 → V2  (after Server 2 is healthy)
+```
+
+**Characteristics:**
+- ✅ Zero downtime
+- 🎯 Most common strategy
+- 📊 Gradual rollout reduces risk
+- 🔄 Old and new versions run simultaneously temporarily
+
+**When to Use:**
+- Production applications (default choice)
+- When zero downtime is required
+- Stable, tested releases
+
+**Configuration Example (Kubernetes):**
+```yaml
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1        # Max new pods above desired count
+    maxUnavailable: 1  # Max pods unavailable during update
+```
+
+---
+
+### 3. Canary Deployment
+
+**Process:**
+```
+V2 → 5% of users (monitor)
+   → 25% of users (if stable)
+   → 50% of users (if stable)
+   → 100% of users (full rollout)
+```
+
+**Characteristics:**
+- 🧪 Test with real users gradually
+- 📉 Minimize blast radius of bugs
+- 📊 Collect metrics before full rollout
+- 🚦 Can halt deployment if issues detected
+
+**When to Use:**
+- Major feature releases
+- High-risk changes
+- When user feedback is crucial
+- A/B testing scenarios
+
+**Monitoring During Canary:**
+- Error rates
+- Response times
+- User feedback
+- Business metrics (conversion, engagement)
+
+**Example Timeline:**
+```
+Day 1: 5% users on V2   → Monitor 24 hours
+Day 2: 25% users on V2  → Monitor 24 hours
+Day 3: 50% users on V2  → Monitor 24 hours
+Day 4: 100% users on V2 → Full rollout complete
+```
+
+---
+
+### 4. Blue-Green Deployment
+
+**Process:**
+```
+Blue (V1) ← Current traffic (100%)
+Green (V2) ← No traffic (deployed and tested)
+Switch traffic → Green becomes active
+Blue kept running (for instant rollback)
+```
+
+**Characteristics:**
+- ⚡ Instant traffic switch
+- 🔄 Instant rollback capability
+- 💰 Requires double resources temporarily
+- ✅ Zero downtime
+
+**When to Use:**
+- Critical applications
+- When instant rollback is essential
+- Database migrations
+- High-stakes releases
+
+**Infrastructure Setup:**
+```
+Load Balancer
+    ├─→ Blue Environment (V1) - 100% traffic
+    └─→ Green Environment (V2) - 0% traffic
+
+[After testing]
+
+Load Balancer
+    ├─→ Blue Environment (V1) - 0% traffic (kept for rollback)
+    └─→ Green Environment (V2) - 100% traffic
+```
+
+---
+
+### 5. Shadow Deployment
+
+**Process:**
+```
+Production Traffic
+    ├─→ V1 (Live) - Responses sent to users
+    └─→ V2 (Shadow) - Responses discarded (only for testing)
+```
+
+**Characteristics:**
+- 🔍 Test with real production workload
+- 🙈 Users don't see V2 (responses discarded)
+- 📊 Collect performance metrics without risk
+- 💰 Requires extra infrastructure
+
+**When to Use:**
+- Performance testing with real load
+- Testing critical system refactors
+- Validating database query changes
+- ML model validation
+
+**What Gets Tested:**
+- Response times under real load
+- Resource consumption (CPU, memory)
+- Error rates and exceptions
+- Database query performance
+
+**Release Process:**
+```
+Week 1-2: Shadow deployment running alongside V1
+         → Analyze metrics, fix issues
+Week 3: Public release of V2 (after validation)
+```
+
+---
+
+### 🎯 Goal: ZERO Downtime Deployment
+
+**Strategies Supporting Zero Downtime:**
+- ✅ Rolling Update
+- ✅ Canary
+- ✅ Blue-Green
+- ✅ Shadow
+
+**Strategies with Downtime:**
+- ❌ Recreate
+
+### Choosing the Right Strategy: Decision Tree
+
+```
+Do you need zero downtime?
+├─ NO → Recreate Deployment
+└─ YES → Do you need instant rollback?
+         ├─ YES → Blue-Green Deployment
+         └─ NO → Is this a high-risk change?
+                 ├─ YES → Canary Deployment
+                 ├─ TESTING → Shadow Deployment
+                 └─ NO → Rolling Update (default)
+```
+
+---
+
+## 📚 Additional Resources
+
+### Tools Mentioned
+- **Docker**: [https://www.docker.com/](https://www.docker.com/)
+- **Kubernetes**: [https://kubernetes.io/](https://kubernetes.io/)
+- **Trivy**: [https://trivy.dev/](https://trivy.dev/)
+- **SonarQube**: [https://www.sonarsource.com/](https://www.sonarsource.com/)
+- **OWASP ZAP**: [https://www.zaproxy.org/](https://www.zaproxy.org/)
+
+### Learning Paths
+1. **Beginner**: Docker → Basic CI/CD → Git workflows
+2. **Intermediate**: Kubernetes → Security scanning → Deployment strategies
+3. **Advanced**: Multi-cloud deployments → Service mesh → Advanced monitoring
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests to improve this guide.
+
+## 📄 License
+
+This guide is provided for educational purposes. Feel free to use and share with attribution.
+
+---
+
+**Last Updated**: November 2025
