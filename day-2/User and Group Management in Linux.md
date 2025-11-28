@@ -315,17 +315,5 @@ ls -l team_goals.md
 
 ---
 
-## Quick Tips for Beginners
 
-1. **Always use `sudo` carefully** - It gives you root powers, so double-check your commands!
-
-2. **Use `-aG` with usermod** - The `-a` is important! Without it, you'll remove the user from all other groups.
-
-3. **Test permissions with a regular user** - After setting permissions, log in as a regular user to make sure everything works.
-
-4. **Start with symbolic mode** - It's easier to understand `chmod u+x` than `chmod 755` when you're learning.
-
-5. **Back up before making system changes** - Especially when modifying user accounts or permissions on important files.
-
----
 
