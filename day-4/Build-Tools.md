@@ -1,4 +1,4 @@
-# Module 4: Build Tools - Complete Guide
+# Day 4: Build Tools - Complete Guide
 
 ## Table of Contents
 1. [Introduction to Build Tools](#introduction-to-build-tools)
